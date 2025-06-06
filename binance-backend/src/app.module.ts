@@ -7,7 +7,6 @@ import { CurrenciesModule } from "./currencies/currencies.module";
 import { WalletsModule } from "./wallets/wallets.module";
 import { TransactionsModule } from "./transactions/transactions.module";
 import { AdsModule } from "./ads/ads.module";
-import { PaymentProofsModule } from "./payment-proofs/payment-proofs.module";
 import { TransfersModule } from "./transfers/transfers.module";
 import { InjectDataSource, TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule, ConfigService } from "@nestjs/config";
@@ -16,7 +15,6 @@ import { Wallet } from "./wallets/entities/wallet.entity";
 import { Currency } from "./currencies/entities/currency.entity";
 import { Transaction } from "./transactions/entities/transaction.entity";
 import { Ad } from "./ads/entities/ad.entity";
-import { PaymentProof } from "./payment-proofs/entities/payment-proof.entity";
 import { Transfer } from "./transfers/entities/transfer.entity";
 import { DataSource } from "typeorm";
 
@@ -35,7 +33,7 @@ import { DataSource } from "typeorm";
                 username: config.get("DB_USERNAME"),
                 password: config.get("DB_PASSWORD"),
                 database: config.get("DB_NAME"),
-                entities: [User, Wallet, Currency, Transaction, Ad, PaymentProof, Transfer],
+                entities: [User, Wallet, Currency, Transaction, Ad, Transfer],
                 synchronize: true,
             }),
         }),
@@ -45,7 +43,6 @@ import { DataSource } from "typeorm";
         WalletsModule,
         TransactionsModule,
         AdsModule,
-        PaymentProofsModule,
         TransfersModule,
     ],
     controllers: [AppController],

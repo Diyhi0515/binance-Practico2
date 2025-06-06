@@ -1,37 +1,35 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
-import Home from "../pages/Home";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
-function PrivateRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
-
-  if (loading) return <div>Cargando...</div>;
-
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
-}
+import LoginPage from "../pages/Login";
+import RegisterPage from "../pages/Register";
+//import AdminDashboard from "../pages/AdminDashboard";
+import UserDashboard from "../pages/UserDashboard";
+import { HomeRedirect } from "../components/HomeRedirect";
+import CurrencyManager from "../pages/CurrencyManager";
+import AdminUsers from "../pages/AdminUsers";
 
 export const AppRouter = () => {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return (
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Routes>
+    );
+  }
+
   return (
     <Routes>
-      {/* Rutas públicas */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route path="/" element={<HomeRedirect />} />
+      <Route path="/admin" element={<CurrencyManager />} />
+      <Route path="/admin/usuarios" element={<AdminUsers />} />
 
-      {/* Ruta protegida */}
-      <Route
-        path="/"
-        element={
-          <PrivateRoute>
-            <Home />
-          </PrivateRoute>
-        }
-      />
-
-      {/* Redireccionar cualquier ruta desconocida a login */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="/user" element={<UserDashboard />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
-export default AppRouter;

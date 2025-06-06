@@ -21,7 +21,7 @@ export class Ad {
     @Column({ type: "text", nullable: true })
     paymentDescription?: string;
 
-    @Column({ nullable: true })
+    @Column({ type: "text", nullable: true })
     paymentImage?: string | null;
 
     @ManyToOne(() => Currency, { eager: true })

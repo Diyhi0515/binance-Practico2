@@ -1,68 +1,131 @@
 import { useState } from "react";
-import { Form, Button, Container, Alert } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { registerService } from "../services/authService";
 
 export default function Register() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setError(null);
+    setLoading(true);
+    console.log("Datos enviados:", form); 
     try {
-      await registerService({ name, email, password });
-      navigate("/login");
+        await registerService(form);
+        navigate("/login");
     } catch (err) {
-      setError(err.message || "Error en registro");
+        setError(err.response?.data?.message || err.message || "Error en el registro");
+    } finally {
+        setLoading(false);
     }
-  };
+    };
+
 
   return (
-    <Container style={{ maxWidth: 400, marginTop: "2rem" }}>
-      <h2>Registro</h2>
-      {error && <Alert variant="danger">{error}</Alert>}
-      <Form onSubmit={handleSubmit}>
-        <Form.Group className="mb-3" controlId="formName">
-          <Form.Label>Nombre completo</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Juan Pérez"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </Form.Group>
+    <div
+      className="d-flex align-items-center justify-content-center vh-100 bg-light bg-gradient"
+      style={{
+        background: "linear-gradient(to right, #667eea, #764ba2)",
+      }}
+    >
+      <div
+        className="card shadow-lg p-4"
+        style={{ width: "100%", maxWidth: "400px" }}
+      >
+        <h3 className="text-center mb-4 text-primary">Crear cuenta</h3>
 
-        <Form.Group className="mb-3" controlId="formEmail">
-          <Form.Label>Correo electrónico</Form.Label>
-          <Form.Control
-            type="email"
-            placeholder="ejemplo@mail.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </Form.Group>
+        {error && <div className="alert alert-danger">{error}</div>}
 
-        <Form.Group className="mb-3" controlId="formPassword">
-          <Form.Label>Contraseña</Form.Label>
-          <Form.Control
-            type="password"
-            placeholder="Tu contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </Form.Group>
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="mb-3">
+            <label htmlFor="name" className="form-label">
+              Nombre completo
+            </label>
+            <div className="input-group">
+              <span className="input-group-text">
+                <i className="bi bi-person-fill"></i>
+              </span>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                className="form-control"
+                placeholder="Juan Pérez"
+                value={form.name}
+                onChange={handleChange}
+                required
+                disabled={loading}
+              />
+            </div>
+          </div>
 
-        <Button variant="success" type="submit" className="w-100">
-          Registrarse
-        </Button>
-      </Form>
-    </Container>
+          <div className="mb-3">
+            <label htmlFor="email" className="form-label">
+              Correo electrónico
+            </label>
+            <div className="input-group">
+              <span className="input-group-text">
+                <i className="bi bi-envelope-fill"></i>
+              </span>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                className="form-control"
+                placeholder="ejemplo@mail.com"
+                value={form.email}
+                onChange={handleChange}
+                required
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="password" className="form-label">
+              Contraseña
+            </label>
+            <div className="input-group">
+              <span className="input-group-text">
+                <i className="bi bi-lock-fill"></i>
+              </span>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                className="form-control"
+                placeholder="Tu contraseña"
+                value={form.password}
+                onChange={handleChange}
+                required
+                disabled={loading}
+                minLength={6}
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="btn btn-success w-100 mb-3"
+            disabled={loading}
+          >
+            {loading ? "Registrando..." : "Registrarse"}
+          </button>
+        </form>
+
+        <div className="text-center">
+          <span>¿Ya tienes cuenta? </span>
+          <Link to="/login" className="text-decoration-none fw-bold">
+            Inicia sesión
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }

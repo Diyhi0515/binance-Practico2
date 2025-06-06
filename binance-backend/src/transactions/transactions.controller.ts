@@ -1,34 +1,38 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from "@nestjs/common";
+import { Controller, Post, Body, Param, Patch, UseGuards, ParseIntPipe, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { TransactionsService } from "./transactions.service";
 import { CreateTransactionDto } from "./dto/create-transaction.dto";
-import { UpdateTransactionDto } from "./dto/update-transaction.dto";
+import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { GetUserId } from "../common/decorators/get-user-id.decorator";
 
 @Controller("transactions")
+@UseGuards(JwtAuthGuard)
 export class TransactionsController {
     constructor(private readonly transactionsService: TransactionsService) {}
 
     @Post()
-    create(@Body() createTransactionDto: CreateTransactionDto) {
-        return this.transactionsService.create(createTransactionDto);
+    create(@Body() dto: CreateTransactionDto, @GetUserId() userId: number) {
+        return this.transactionsService.create(dto, userId);
     }
 
-    @Get()
-    findAll() {
-        return this.transactionsService.findAll();
+    @Patch(":id/complete")
+    complete(@Param("id", ParseIntPipe) id: number, @GetUserId() userId: number) {
+        return this.transactionsService.complete(id, userId);
     }
 
-    @Get(":id")
-    findOne(@Param("id") id: string) {
-        return this.transactionsService.findOne(+id);
+    @Patch(":id/cancel")
+    cancel(@Param("id", ParseIntPipe) id: number, @GetUserId() userId: number) {
+        return this.transactionsService.cancel(id, userId);
     }
 
-    @Patch(":id")
-    update(@Param("id") id: string, @Body() updateTransactionDto: UpdateTransactionDto) {
-        return this.transactionsService.update(+id, updateTransactionDto);
+    @Patch(":id/proof")
+    @UseInterceptors(FileInterceptor("file"))
+    uploadProof(@Param("id", ParseIntPipe) id: number, @UploadedFile() file: Express.Multer.File, @GetUserId() userId: number) {
+        return this.transactionsService.uploadProof(id, file.filename, userId);
     }
 
-    @Delete(":id")
-    remove(@Param("id") id: string) {
-        return this.transactionsService.remove(+id);
+    @Post("mine")
+    getUserTransactions(@GetUserId() userId: number) {
+        return this.transactionsService.findUserTransactions(userId);
     }
 }

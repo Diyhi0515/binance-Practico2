@@ -1,59 +1,85 @@
 import { useState } from "react";
-import { Form, Button, Container, Alert } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { loginService } from "../services/authService";
+import { useAuth } from "../hooks/useAuth";
+import { loginService } from "../services/authService.js";
+import { useNavigate, Link } from "react-router-dom";
 
-export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+const LoginPage = () => {
   const { login } = useAuth();
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     try {
-      const response = await loginService({ email, password });
-      login(response.token);
-      navigate("/");
+      const { access_token, user } = await loginService(form);
+      login(access_token, user);
+      navigate(user.role === "admin" ? "/admin" : "/user");
     } catch (err) {
-      setError(err.message || "Error en login");
+      setError("Credenciales incorrectas. Inténtalo de nuevo.");
+        console.error("Error de inicio de sesión:", err);
     }
   };
 
   return (
-    <Container style={{ maxWidth: 400, marginTop: "2rem" }}>
-      <h2>Iniciar sesión</h2>
-      {error && <Alert variant="danger">{error}</Alert>}
-      <Form onSubmit={handleSubmit}>
-        <Form.Group className="mb-3" controlId="formEmail">
-          <Form.Label>Correo electrónico</Form.Label>
-          <Form.Control
-            type="email"
-            placeholder="ejemplo@mail.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </Form.Group>
+    <div
+      className="d-flex align-items-center justify-content-center vh-100 bg-light bg-gradient"
+      style={{
+        background: "linear-gradient(to right, #667eea, #764ba2)",
+      }}
+    >
+      <div className="card shadow-lg p-4" style={{ width: "100%", maxWidth: "400px" }}>
+        <h3 className="text-center mb-4 text-primary">Bienvenido</h3>
+        <form onSubmit={handleSubmit}>
+          {error && <div className="alert alert-danger">{error}</div>}
+          <div className="mb-3">
+            <label className="form-label">Correo electrónico</label>
+            <div className="input-group">
+              <span className="input-group-text">
+                <i className="bi bi-envelope-fill"></i>
+              </span>
+              <input
+                type="email"
+                name="email"
+                className="form-control"
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
 
-        <Form.Group className="mb-3" controlId="formPassword">
-          <Form.Label>Contraseña</Form.Label>
-          <Form.Control
-            type="password"
-            placeholder="Tu contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </Form.Group>
+          <div className="mb-3">
+            <label className="form-label">Contraseña</label>
+            <div className="input-group">
+              <span className="input-group-text">
+                <i className="bi bi-lock-fill"></i>
+              </span>
+              <input
+                type="password"
+                name="password"
+                className="form-control"
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
 
-        <Button variant="primary" type="submit" className="w-100">
-          Entrar
-        </Button>
-      </Form>
-    </Container>
+          <button className="btn btn-primary w-100 mb-3">Iniciar Sesión</button>
+        </form>
+
+        <div className="text-center">
+          <span>¿No tienes una cuenta? </span>
+          <Link to="/register" className="text-decoration-none fw-bold">
+            Regístrate aquí
+          </Link>
+        </div>
+      </div>
+    </div>
   );
-}
+};
+
+export default LoginPage;
